@@ -20,9 +20,7 @@ function fetchCsv(csvName) {
   return defer.promise;
 }
 
-var inputCsv = null;
-var dbCsv = null;
-
+// import Data Base csv
 fetchCsv('test_organizationsProd.csv')
   .then(function (data) {
     var db = [];
@@ -70,26 +68,21 @@ fetchCsv('test_organizationsProd.csv')
     return db;
   })
   .then(function (dbCsv) {
+    // import Updated csv
     fetchCsv('input.csv')
       .then(function (data) {
         var ex = [];
         for(var i = 1; i<data.length; i++) {
-          // if(!data[i][3]) {
-          //   data[i][3] = data[i][9];
-          //   if(!data[i][3]) {
-          //     data[i][3] = data[i][0];
-          //   }
-          // }
 
           if(data[i][3] === 'RANGLE.IO') {
             type = 'Data Collector';
             website = 'www.rangle.io';
-            isDataCollector = 't';
+            isDataCollector = true;
             rangle = 'org@rangle.io';
           } else {
             type = 'Clinic';
             website = '';
-            isDataCollector = 'f';
+            isDataCollector = false;
             rangle = '';
           }
 
@@ -112,15 +105,15 @@ fetchCsv('test_organizationsProd.csv')
             reposts_url: '',
             latitude: data[i][13],
             longitude: data[i][14],
-            is_partner: 'f',
+            is_partner: false,
             is_data_collector: isDataCollector,
             non_members_can_call: isDataCollector,
-            all_members_can_call: 'f',
-            is_archived: 'f',
+            all_members_can_call: false,
+            is_archived: false,
             can_send_notifications: isDataCollector,
             video_start_time: '',
             video_end_time: '',
-            video_is_online: 'f',
+            video_is_online: false,
             video_minutes_to_wait: '',
             admin_user_name: rangle,
             video_time_zone: '',
@@ -135,15 +128,18 @@ fetchCsv('test_organizationsProd.csv')
         return ex;
       })
       .then(function (excelCsv) {
+        // Variables for excelCsv
         var newOrganization = compare.onlyInExcel(excelCsv, dbCsv);
         var updatedAndNewOrganizations = compare.updatedInExcel(excelCsv, dbCsv);
         compare.makeNewPropertyTrue(newOrganization);
         compare.makeUpdatePropertyTrue(updatedAndNewOrganizations);
 
+        // Variables for DB
         var oldOrganizationDB = compare.onlyInDB(excelCsv, dbCsv);
         var updatedAndNewOrganizationsDB = compare.updatedInDB(excelCsv, dbCsv);
         compare.makeNoTouchyPropertyTrue(oldOrganizationDB);
         compare.makeUpdatePropertyTrueDB(updatedAndNewOrganizationsDB);
+
         var updatedOrganizationsFinal = updatedAndNewOrganizations.filter(function (data) {
           return data.newRow === false;
         });
@@ -158,63 +154,95 @@ fetchCsv('test_organizationsProd.csv')
         // console.log('newTotal', dbCsv.length + newOrganization.length );
 
 
+        // All SQL commands for new rows to the DB
+        var sqlCommandsForInsert = newOrganization.map(function (data) {
+          var a = data.label ? data.label: '';
+          var b = data.type ? data.type: '';
+          var c = data.first_name ? data.first_name: '';
+          var d = data.last_name ? data.last_name: '';
+          var e = data.address ? data.address: '';
+          var f = data.city ? data.city: '';
+          var g = data.state ? data.state: '';
+          var h = data.zip_code ? data.zip_code: '';
+          var i = data.phone_number ? data.phone_number: '';
+          var j = data.email ? data.email: '';
+          var k = data.latitude ? data.latitude: null;
+          var l = data.longitude ? data.longitude: null;
 
-        var sqlCommandsForUpdate = newOrganization.map(function (data) {
-          var commands = [];
-
-            var a = data.label ? data.label: '';
-            var b = data.type ? data.type: '';
-            var c = data.website ? data.website: '';
-            var d = data.sampling_device ? data.sampling_device: '';
-            var e = data.first_name ? data.first_name: '';
-            var f = data.last_name ? data.last_name: '';
-            var g = data.address ? data.address: '';
-            var h = data.city ? data.city: '';
-            var i = data.state ? data.state: '';
-            var j = data.zip_code ? data.zip_code: '';
-            var k = data.phone_number ? data.phone_number: '';
-            var l = data.fax_number ? data.fax_number: '';
-            var m = data.cell_number ? data.cell_number: '';
-            var n = data.email ? data.email: '';
-            var o = data.reposts_url ? data.reposts_url: '';
-            var p = data.latitude ? data.latitude: '';
-            var q = data.longitude ? data.longitude: '';
-            var r = data.is_partner ? data.is_partner: '';
-            var s = data.is_data_collector ? data.is_data_collector: '';
-            var t = data.non_members_can_call ? data.non_members_can_call: '';
-            var u = data.all_members_can_call ? data.all_members_can_call: '';
-            var v = data.is_archived ? data.is_archived: '';
-            var w = data.can_send_notificatio ? data.can_send_notifications: '';
-            var x = data.video_start_time ? data.video_start_time: '';
-            var y = data.video_end_time ? data.video_end_time: '';
-            var z = data.video_is_online ? data.video_is_online: '';
-            var aa = data.video_minutes_to_wai ? data.video_minutes_to_wait: '';
-            var bb = data.admin_user_name ? data.admin_user_name: '';
-            var cc = data.video_time_zone ? data.video_time_zone: '';
-            var dd = data.last_report_entered ? data.last_report_entered: '';
-            var ee = data.clinic_sub_type ? data.clinic_sub_type: '';
-            var ff = data.is_kagen_data_collec ? data.is_kagen_data_collector: '';
-
-          var sql = "INSERT INTO organizations (organization_name, label, type,  website, sampling_device, first_name,  last_name, address, city,  state, zip_code,  phone_number,  fax_number,  cell_number, email, reports_url, latitude,  longitude, is_partner,  is_data_collector, non_members_can_call,  all_members_can_call,  is_archived, can_send_notifications,  video_start_time,  video_end_time,  video_is_online, video_minutes_to_wait, admin_user_name, video_time_zone, last_report_entered, clinic_sub_type, is_kagen_data_collector)" +
+          var sql = "INSERT INTO organizations (organization_name, label, type,  first_name, last_name, address, city,  state, zip_code,  phone_number, email, latitude, longitude)" +
             " VALUES ('"+data.organization_name+ "'," +
             "'"+a+"', '"+b+"', '"+c+"', '"+d+"', '"+e+"', '"+f+"', '"+g+"'," +
-            "'"+h+"', '"+i+"', '"+j+"', '"+k+"', '"+l+"', '"+m+"', '"+n+"'," +
-            "'"+o+"', '"+p+"', '"+q+"', '"+r+"', '"+s+"', '"+t+"', '"+u+"'," +
-            "'"+v+"', '"+w+"', '"+x+"', '"+y+"', '"+z+"', '"+aa+", '"+bb+"'," +
-            "'"+cc+"', '"+dd+"', '"+ee+"', '"+ff+");";
-
-           sql = sql.replace(/\\/g, '');
-          commands.push(sql);
+            "'"+h+"', '"+i+"', '"+j+"', "+k+", "+l+");";
 
           return sql;
+
         });
 
-        console.log(sqlCommandsForUpdate);
+        // All SQL commands for updates to the DB
+        var sqlCommandsForUpdate = updatedOrganizationsFinal.map(function (data) {
+          var a = data.label ? data.label: '';
+          var b = data.type ? data.type: '';
+          // var c = data.website ? data.website: '';
+          // var d = data.sampling_device ? data.sampling_device: '';
+          var e = data.first_name ? data.first_name: '';
+          var f = data.last_name ? data.last_name: '';
+          var g = data.address ? data.address: '';
+          var h = data.city ? data.city: '';
+          var i = data.state ? data.state: '';
+          var j = data.zip_code ? data.zip_code: '';
+          var k = data.phone_number ? data.phone_number: '';
+          // var l = data.fax_number ? data.fax_number: '';
+          // var m = data.cell_number ? data.cell_number: '';
+          var n = data.email ? data.email: '';
+          // var o = data.reposts_url ? data.reposts_url: '';
+          var p = data.latitude ? data.latitude: null;
+          var q = data.longitude ? data.longitude: null;
+          // var r = data.is_partner ? data.is_partner: false;
+          // var s = data.is_data_collector ? data.is_data_collector: false;
+          // var t = data.non_members_can_call ? data.non_members_can_call: false;
+          // var u = data.all_members_can_call ? data.all_members_can_call: false;
+          // var v = data.is_archived ? data.is_archived: false;
+          // var w = data.can_send_notifications ? data.can_send_notifications: false;
+          // var x = data.video_start_time ? data.video_start_time: '';
+          // var y = data.video_end_time ? data.video_end_time: '';
+          // var z = data.video_is_online ? data.video_is_online: false;
+          // var aa = data.video_minutes_to_wait ? data.video_minutes_to_wait: '';
+          // var bb = data.admin_user_name ? data.admin_user_name: '';
+          // var cc = data.video_time_zone ? data.video_time_zone: '';
+          // var dd = data.last_report_entered ? data.last_report_entered: '';
+          // var ee = data.clinic_sub_type ? data.clinic_sub_type: '';
+          // var ff = data.is_kagen_data_collector ? data.is_kagen_data_collector: false;
+
+          var sql = "UPDATE organizations SET " +
+            "label='"+a+"', " +
+            "type='"+b+"', " +
+            "first_name='"+e+"', " +
+            "last_name='"+f+"', " +
+            "address='"+g+"', " +
+            "city='"+h+"', " +
+            "state='"+i+"', " +
+            "zip_code='"+j+"', " +
+            "phone_number='"+k+"', " +
+            "email='"+n+"', " +
+            "latitude="+p+", " +
+            "longitude="+q+"" +
+            " WHERE organization_name = '"+data.organization_name+"';";
+
+          return sql;
+
+        });
+
+        var update = sqlCommandsForUpdate.map(function (x) {
+          return x +'\n';
+        }).join('').toString();
+        var insert = sqlCommandsForInsert.map(function (x) {
+          return x +'\n';
+        }).join('').toString();
 
 
+        fs.writeFile('update.sql', update);
+        fs.writeFile('insert.sql', insert);
 
-        return finalList;
       });
   });
 
-console.log("''");

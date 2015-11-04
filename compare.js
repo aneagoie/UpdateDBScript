@@ -5,6 +5,7 @@ function onlyInExcel(secondBlock, firstBlock) {
     }).length === 0;
   });
 }
+
 function onlyInDB(secondBlock, firstBlock) {
   return firstBlock.filter(function(current){
     return secondBlock.filter(function(current_a){
@@ -12,6 +13,7 @@ function onlyInDB(secondBlock, firstBlock) {
     }).length === 0;
   });
 }
+
 function updatedInDB(secondBlock, firstBlock) {
   return firstBlock.filter(function(current){
     return secondBlock.filter(function(current_a){
@@ -22,7 +24,6 @@ function updatedInDB(secondBlock, firstBlock) {
                 current_a.address === current.address &&
                 current_a.first_name === current.first_name &&
                 current_a.last_name === current.last_name &&
-                current_a.website === current.website &&
                 current_a.city === current.city  &&
                 current_a.state === current.state &&
                 current_a.zip_code === current.zip_code &&
@@ -32,8 +33,6 @@ function updatedInDB(secondBlock, firstBlock) {
     }).length === 0;
   });
 }
-
-
 
 function updatedInExcel(secondBlock, firstBlock) {
   return secondBlock.filter(function(current){
@@ -45,7 +44,6 @@ function updatedInExcel(secondBlock, firstBlock) {
                 current_a.address === current.address &&
                 current_a.first_name === current.first_name &&
                 current_a.last_name === current.last_name &&
-                current_a.website === current.website &&
                 current_a.city === current.city  &&
                 current_a.state === current.state &&
                 current_a.zip_code === current.zip_code &&
@@ -61,6 +59,7 @@ function makeNewPropertyTrue(onlyInExcel) {
   data.newRow = true;
  });
 }
+
 function makeUpdatePropertyTrue(updatedInExcel) {
  updatedInExcel.forEach(function (data) {
   if (!data.newRow) {
@@ -68,6 +67,7 @@ function makeUpdatePropertyTrue(updatedInExcel) {
   }
  });
 }
+
 function makeUpdatePropertyTrueDB(updatedInDB) {
  updatedInDB.forEach(function (data) {
   if (!data.noTouchy) {
@@ -75,6 +75,7 @@ function makeUpdatePropertyTrueDB(updatedInDB) {
   }
  });
 }
+
 function makeNoTouchyPropertyTrue(updatedInDB) {
  updatedInDB.forEach(function (data) {
   if (!data.update) {
@@ -122,6 +123,7 @@ module.exports = {
 };
 
 
+// This is for test purposes
 var excelCsv = [
   {
     organization_name:"4a55eff3",
